@@ -1,0 +1,5 @@
+discord.py
+sqlalchemy
+asyncpg
+python-dotenv
+pytz
