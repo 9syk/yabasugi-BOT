@@ -1,7 +1,7 @@
 import os
 import discord
 import pytz
-from datetime import datetime
+from datetime import datetime, time
 from discord import app_commands
 from discord.ext import tasks
 from sqlalchemy import select, desc
@@ -29,7 +29,8 @@ async def init_db():
 async def on_ready():
     await init_db()
     await tree.sync()
-    monthly_check.start()
+    if not monthly_check.is_running():
+        monthly_check.start()
 
 #メッセージを受信
 @client.event
@@ -194,12 +195,11 @@ async def increment_count(user_id: int, guild_id: int):
         await session.commit()
         return monthly_count, total_count
 
-#月間ランキング
-@tasks.loop(minutes=1)
+# 月間ランキング（毎月1日 0:00 JST に1回だけ実行）
+@tasks.loop(time=time(hour=0, minute=0, tzinfo=pytz.timezone("Asia/Tokyo")))
 async def monthly_check():
     now = datetime.now(pytz.timezone("Asia/Tokyo"))
-    if now.day == 1 and now.hour == 0 and now.minute == 0:
-        return
+    # 前月を取得
     year = now.year
     month = now.month - 1
     if month == 0:
@@ -223,24 +223,29 @@ async def monthly_check():
             if not ranking:
                 continue
             channel = client.get_channel(setting.ranking_channel_id)
-            if channel is None:
+            if not isinstance(channel, discord.TextChannel):
                 continue
             embed = discord.Embed(
                 title=f"{year}年{month}月 冷笑ランキング",
                 color=discord.Color.gold()
             )
-            for i, row in enumerate(ranking, start=1):
+            last_count = None
+            rank_position = 0
+            for index, row in enumerate(ranking, start=1):
+                # 同率順位対応
+                if row.count != last_count:
+                    rank_position = index
+                    last_count = row.count
                 total = await session.get(
                     TotalCount,
                     (row.user_id, row.guild_id)
                 )
                 embed.add_field(
-                    name=f"{i}位",
+                    name=f"{rank_position}位",
                     value=f"<@{row.user_id}> {row.count}回 (累計 {total.count if total else 0}回)",
                     inline=False
                 )
-            if isinstance(channel, discord.TextChannel):
-                await channel.send(embed=embed)
+            await channel.send(embed=embed)
 
 
 client.run(TOKEN)
