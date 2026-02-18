@@ -44,7 +44,9 @@ async def on_message(message):
     content = message.content
     if content == "おお":
         await message.channel.send("おおじゃないが")
-    KEYWORDS = ["うお","うぉ","どわー"]
+    if content == "おおじゃないが":
+        await message.channel.send("これはおおだろ")
+    KEYWORDS = ["うお","うぉ","どわー",":fish:","けけっ","ひひっ","おう","効いてて草","きちー"]
     if any(keyword in content for keyword in KEYWORDS):
         monthly, total = await increment_count(
             author_id,
