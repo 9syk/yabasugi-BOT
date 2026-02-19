@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import tasks
 from sqlalchemy import select, desc
 from dotenv import load_dotenv
-import re, random
+import re, random, uuid
 
 from db import engine, AsyncSessionLocal
 from models import Base, MessageCount, TotalCount, GuildSettings
@@ -72,6 +72,13 @@ async def on_message(message):
         await message.reply(f"🎲 **合計: {dice_total}** (出目: {dice_rolls})")
 
 #スラッシュコマンド
+@tree.command(name="uuid",description="UUIDを生成")
+async def generate_uuid(interaction: discord.Interaction):
+    uuid = uuid.uuid4()
+    await interaction.response.send_message(
+        f"{uuid}\n{uuid.hex}"
+    )
+
 @tree.command(name="set_ranking_channel", description="ランキング投稿チャンネルを設定")
 @app_commands.checks.has_permissions(administrator=True)
 async def set_ranking_channel(interaction: discord.Interaction, channel: discord.TextChannel):
