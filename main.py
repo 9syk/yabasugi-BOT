@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import tasks
 from sqlalchemy import select, desc
 from dotenv import load_dotenv
+import re, random
 
 from db import engine, AsyncSessionLocal
 from models import Base, MessageCount, TotalCount, GuildSettings
@@ -55,6 +56,20 @@ async def on_message(message):
         await message.channel.send(
             f"どわーW {message.author.mention} さん！今月 {monthly} 回目の冷笑です！(累計 {total} 回)"
         )
+    dice_pattern = r'([\d０-９]+)\s*[dDｄＤ]\s*([\d０-９]+)'
+    dice_match = re.search(dice_pattern, content)
+    if dice_match:
+        dice_count = int(dice_match.group(1))
+        dice_sides = int(dice_match.group(2))
+        if dice_count > 100:
+            await message.reply("ダイスの数が多すぎます！(最大100)")
+            return
+        if dice_sides > 10000:
+            await message.reply("ダイスの面が多すぎます！(最大10000)")
+            return
+        dice_rolls = [random.randint(1, dice_sides) for _ in range(dice_count)]
+        dice_total = sum(dice_rolls)
+        await message.reply(f"🎲 **{dice_total}** (出目: {dice_rolls})")
 
 #スラッシュコマンド
 @tree.command(name="set_ranking_channel", description="ランキング投稿チャンネルを設定")
