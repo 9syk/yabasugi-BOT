@@ -61,11 +61,11 @@ async def on_message(message):
     if dice_match:
         dice_count = int(dice_match.group(1))
         dice_sides = int(dice_match.group(2))
-        if dice_count > 100:
-            await message.reply("ダイスの数が多すぎます！(最大100)")
+        if dice_count > 256:
+            await message.reply("ダイスの数が多すぎます！(最大256)")
             return
-        if dice_sides > 10000:
-            await message.reply("ダイスの面が多すぎます！(最大10000)")
+        if dice_sides > 65536:
+            await message.reply("ダイスの面が多すぎます！(最大65536)")
             return
         dice_rolls = [random.randint(1, dice_sides) for _ in range(dice_count)]
         dice_total = sum(dice_rolls)
