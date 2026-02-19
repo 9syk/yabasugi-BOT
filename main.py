@@ -74,9 +74,9 @@ async def on_message(message):
 #スラッシュコマンド
 @tree.command(name="uuid",description="UUIDを生成")
 async def generate_uuid(interaction: discord.Interaction):
-    uuid = uuid.uuid4()
+    uid = uuid.uuid4()
     await interaction.response.send_message(
-        f"{uuid}\n{uuid.hex}"
+        f"{uid}\n{uid.hex}"
     )
 
 @tree.command(name="set_ranking_channel", description="ランキング投稿チャンネルを設定")
