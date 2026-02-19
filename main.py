@@ -69,7 +69,7 @@ async def on_message(message):
             return
         dice_rolls = [random.randint(1, dice_sides) for _ in range(dice_count)]
         dice_total = sum(dice_rolls)
-        await message.reply(f"🎲 **合計: {dice_total}** (出目: {dice_rolls})")
+        await message.reply(f"🎲{dice_count}d{dice_sides}/n**合計: {dice_total}**/n(出目: {dice_rolls})")
 
 #スラッシュコマンド
 @tree.command(name="uuid",description="UUIDを生成")
