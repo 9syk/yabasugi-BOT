@@ -199,6 +199,9 @@ async def increment_count(user_id: int, guild_id: int):
 @tasks.loop(time=time(hour=0, minute=0, tzinfo=pytz.timezone("Asia/Tokyo")))
 async def monthly_check():
     now = datetime.now(pytz.timezone("Asia/Tokyo"))
+    #毎月一日のみ実行
+    if now.day != 1:
+        return
     # 前月を取得
     year = now.year
     month = now.month - 1
