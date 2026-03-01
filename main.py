@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import tasks
 from sqlalchemy import select, desc
 from dotenv import load_dotenv
+import re, random, uuid
 
 from db import engine, AsyncSessionLocal
 from models import Base, MessageCount, TotalCount, GuildSettings
@@ -44,7 +45,9 @@ async def on_message(message):
     content = message.content
     if content == "おお":
         await message.channel.send("おおじゃないが")
-    KEYWORDS = ["うお","うぉ","どわー"]
+    if content == "おおじゃないが":
+        await message.channel.send("これはおおだろ")
+    KEYWORDS = ["うお","うぉ","どわー","🐟","けけっ","ひひっ","おう","効いてて草","きちー","😅"]
     if any(keyword in content for keyword in KEYWORDS):
         monthly, total = await increment_count(
             author_id,
@@ -53,8 +56,29 @@ async def on_message(message):
         await message.channel.send(
             f"どわーW {message.author.mention} さん！今月 {monthly} 回目の冷笑です！(累計 {total} 回)"
         )
+    dice_pattern = r'([\d０-９]+)\s*[dDｄＤ]\s*([\d０-９]+)'
+    dice_match = re.search(dice_pattern, content)
+    if dice_match:
+        dice_count = int(dice_match.group(1))
+        dice_sides = int(dice_match.group(2))
+        if dice_count > 256:
+            await message.reply("ダイスの数が多すぎます！(最大256)")
+            return
+        if dice_sides > 65536:
+            await message.reply("ダイスの面が多すぎます！(最大65536)")
+            return
+        dice_rolls = [random.randint(1, dice_sides) for _ in range(dice_count)]
+        dice_total = sum(dice_rolls)
+        await message.reply(f"🎲{dice_count}d{dice_sides}\n**合計: {dice_total}**\n(出目: {dice_rolls})")
 
 #スラッシュコマンド
+@tree.command(name="uuid",description="UUIDを生成")
+async def generate_uuid(interaction: discord.Interaction):
+    uid = uuid.uuid4()
+    await interaction.response.send_message(
+        f"{uid}\n{uid.hex}"
+    )
+
 @tree.command(name="set_ranking_channel", description="ランキング投稿チャンネルを設定")
 @app_commands.checks.has_permissions(administrator=True)
 async def set_ranking_channel(interaction: discord.Interaction, channel: discord.TextChannel):
